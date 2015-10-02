@@ -1,0 +1,23 @@
+{
+  "name": "betfair-emulator",
+  "version": "1.0.0",
+  "description": "Betfair emulator",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AlgoTrader/betfair-emulator.git"
+  },
+  "keywords": [
+    "betfair",
+    "emulator"
+  ],
+  "author": "Anton Zemlyanov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/AlgoTrader/betfair-emulator/issues"
+  },
+  "homepage": "https://github.com/AlgoTrader/betfair-emulator"
+}
