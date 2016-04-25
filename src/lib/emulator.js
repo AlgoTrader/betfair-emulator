@@ -1,7 +1,7 @@
 'use strict';
 
 let _ = require('underscore');
-let EmulatorMarket = require('emulator_market.js');
+let EmulatorMarket = require('./emulator_market.js');
 
 const NETWORK_DELAY = 20; // 20ms, every API call is delayed this time
 const BETTING_DELAY = 100; // 100ms caused by Malta roundtrip
@@ -15,13 +15,15 @@ class Emulator {
 
     // control which markets are emulated
     enableEmulationForMarket(marketId) {
-        this.log.info('started emulation for market: '+marketId);
+        this.log.info('started emulation for market: ' + marketId);
         this.markets.set(marketId, new EmulatorMarket(marketId));
     }
+
     disableEmulationForMarket(marketId) {
-        this.log.info('stopped emulation for market: '+marketId);
+        this.log.info('stopped emulation for market: ' + marketId);
         this.market.delete(marketId);
     }
+
     isEmulatedMarket(marketId) {
         return this.markets.has(marketId);
     }
@@ -30,7 +32,7 @@ class Emulator {
     feedListMarketBook(marketBooks) {
         this.log.debug('feed feedListMarketBook', marketBooks);
         _.each(marketBooks, (marketBook) => {
-            if(this.markets.has(marketBook.marketId)) {
+            if (!this.markets.has(marketBook.marketId)) {
                 // skip not emulated markets
                 return;
             }
@@ -43,4 +45,4 @@ class Emulator {
     // TODO
 }
 
-module.exports = new Emulator();
+module.exports = Emulator;
