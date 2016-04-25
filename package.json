@@ -1,13 +1,14 @@
 {
   "name": "betfair-emulator",
-  "version": "1.0.0",
+  "version": "1.6.2",
   "description": "Betfair emulator",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build-src": "babel --presets es2015 src/lib --out-dir ./lib",
     "build-test": "babel --presets es2015 src/test --out-dir ./test",
-    "build": "npm run build-src && npm run build-test"
+    "build": "npm run build-src && npm run build-test",
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
