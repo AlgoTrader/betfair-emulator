@@ -1,13 +1,27 @@
-let NEXT_BET_ID = 1000000000;
+let _ = require('lodash');
+
+let NEXT_BET_ID = 10000000000;
+
+const BET_DEFAULT_OPTIONS = {
+    orderType: 'LIMIT',
+    persistenceType: "LAPSE"
+};
 
 class EmulatorBet {
-    constructor(marketId, selectionId, side, price, size) {
-        this.id = NEXT_BET_ID++;
-        this.marketId = marketId
+    constructor(selectionId, side, price, size, opts = {}) {
+        let options = _.merge(_.cloneDeep(BET_DEFAULT_OPTIONS), opts);
+        if(options.orderType!='LIMIT') {
+            throw new Error('Only orderType="LIMIT" orders are supported');
+        }
+        this.betId = NEXT_BET_ID++;
+        this.orderType = options.orderType;
         this.selectionId = selectionId;
         this.side = side;
-        this.price = price;
-        this.size = size;
+        this.limitOrder = {
+            price: price,
+            size: size,
+            persistenceType: options.persistenceType
+        }
     }
 }
 
