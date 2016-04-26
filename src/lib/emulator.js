@@ -1,6 +1,6 @@
 'use strict';
 
-let _ = require('underscore');
+let _ = require('lodash');
 let EmulatorMarket = require('./emulator_market.js');
 
 const NETWORK_DELAY = 20; // 20ms, every API call is delayed this time
@@ -16,7 +16,7 @@ class Emulator {
     // control which markets are emulated
     enableEmulationForMarket(marketId) {
         this.log.info('started emulation for market: ' + marketId);
-        this.markets.set(marketId, new EmulatorMarket(marketId));
+        this.markets.set(marketId, new EmulatorMarket(this.log, marketId));
     }
 
     disableEmulationForMarket(marketId) {
@@ -29,7 +29,7 @@ class Emulator {
     }
 
     // getMarketBook feed, provides prices for emulator
-    feedListMarketBook(marketBooks) {
+    onListMarketBook(marketBooks) {
         this.log.debug('feed feedListMarketBook', marketBooks);
         _.each(marketBooks, (marketBook) => {
             if (!this.markets.has(marketBook.marketId)) {
@@ -37,12 +37,14 @@ class Emulator {
                 return;
             }
             let marketEmulator = this.markets.get(marketBook.marketId);
-            marketEmulator.feedListMarketBook(marketBook);
+            marketEmulator.onListMarketBook(marketBook);
         });
     }
 
     // handle orders
-    // TODO
+    placeOrders() {
+
+    }
 }
 
 module.exports = Emulator;
