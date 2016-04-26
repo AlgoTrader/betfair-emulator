@@ -8,6 +8,7 @@ class EmulatorMarket {
         this.log = logger;
         this.marketId = marketId;
         this.initialized = false;
+        this.runners={};
     }
 
     onListMarketBook(marketBook) {
@@ -22,6 +23,7 @@ class EmulatorMarket {
         this.inplay = marketBook.inplay;
         this.version = marketBook.version;
         _.each(marketBook.runners, (runner) => {
+            // avaliable to BACK
             let availableToBack = _.cloneDeep(runner.ex.availableToBack);
             let backAvailability = [];
             _.reduce(availableToBack, (acc, item) => {
@@ -31,7 +33,26 @@ class EmulatorMarket {
                 return acc;
             } , 0);
             this.log.debug('back availability', backAvailability);
+
+            // avaliable to lAY
+            let availableToLay = _.cloneDeep(runner.ex.availableToLay);
+            let layAvailability = [];
+            _.reduce(availableToLay, (acc, item) => {
+                acc += item.size;
+                item.size = utils.normalizeSize(acc);
+                layAvailability.push(item);
+                return acc;
+            } , 0);
+            this.log.debug('lay availability', layAvailability);
+
+            // store
+            this.runners[runner.selectionId] = {
+                selectionId: runner.selectionId,
+                backAvailability,
+                layAvailability
+            }
         });
+        this.log.debug('preprocessed runners', this.runners);
 
         this.initialized = true;
     }
