@@ -3,8 +3,8 @@
 let _ = require('lodash');
 let EmulatorMarket = require('./emulator_market.js');
 
-const NETWORK_DELAY = 20; // 20ms, every API call is delayed this time
-const BETTING_DELAY = 100; // 100ms caused by Malta roundtrip
+const NETWORK_DELAY = 20; // ms, every API call is delayed this time
+const BETTING_DELAY = 50; // ms caused by Malta roundtrip
 
 class Emulator {
     constructor(logger) {
@@ -42,13 +42,22 @@ class Emulator {
     }
 
     // handle orders
-    placeOrders(params) {
+    placeOrders(params, cb = () => {}) {
+        this.log.debug('placeOrders scheduled', params);
         let marketId = params.marketId;
         if (!this.markets.has(marketId)) {
-            return new Error('Cannot place orders for marketId=', marketId);
+            throw new Error('Market does not use emulator, marketId='+ marketId);
         }
         let market = this.markets.get(marketId);
-        return market.placeOrders(params);
+        if(!market.initialized) {
+            console.log('throw error');
+            throw new Error('Cannot bet on uninitialized market, marketId='+marketId);
+        }
+        let delay = market.betDelay*1000 + NETWORK_DELAY +BETTING_DELAY;
+        _.delay(() => {
+            this.log.debug('placeOrders delayed execution, delay='+delay, params);
+            market.placeOrders(params, cb);
+        }, delay);
     }
 }
 

@@ -16,6 +16,7 @@ class EmulatorMarket {
 
     // match bets using new price data
     _matchBets() {
+
         return;
     }
 
@@ -103,7 +104,7 @@ class EmulatorMarket {
         this.initialized = true;
     }
 
-    placeOrders(params) {
+    placeOrders(params, cb=() => {}) {
         if (params.marketId != this.marketId) {
             throw new Error('placeOrders marketId mismatch');
         }
@@ -150,7 +151,7 @@ class EmulatorMarket {
             })
         };
         this.log.debug('placeOrders result:', result);
-        return result;
+        cb(null, result);
     }
 }
 
