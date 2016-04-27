@@ -15,7 +15,21 @@ class EmulatorMarket {
     }
 
     _matchBets() {
+    }
 
+    _onGoInplay() {
+        this.log.debug('marketId: ' + this.marketId + ' go inplay');
+
+        // cancel all the bets that has persistence LAPSE
+        let lapsedIds = [];
+        for (let tuple of this.unmatchedBets) {
+            let [betId, bet] = tuple;
+            if (bet.limitOrder.persistenceType == 'LAPSE') {
+                bet.lapse();
+                lapsedIds.push(betId);
+            }
+        }
+        _.each(lapsedIds, (id) => {this.unmatchedBets.delete(id);})
     }
 
     onListMarketBook(marketBook) {
@@ -24,6 +38,9 @@ class EmulatorMarket {
         }
 
         this.log.debug('onListMarketBook for market: ' + this.marketId);
+        if (!this.inplay && marketBook.inplay) {
+            _onGoInplay();
+        }
 
         this.status = marketBook.status;
         this.betDelay = marketBook.betDelay;
@@ -101,11 +118,11 @@ class EmulatorMarket {
             instructionReports: _.map(bets, (bet) => {
                 return {
                     status: "SUCCESS",
-                    instruction: _.omit(_.clone(bet), 'betId'),
+                    instruction: bet.getInstruction(),
                     betId: bet.betId,
-                    placedDate: null,
-                    averagePriceMatched: 0,
-                    sizeMatched: 0
+                    placedDate: bet.placedDate,
+                    averagePriceMatched: bet.averagePriceMatched,
+                    sizeMatched: bet.sizeMatched
                 }
             })
         };
