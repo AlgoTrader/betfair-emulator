@@ -10,7 +10,7 @@ const BET_DEFAULT_OPTIONS = {
 class EmulatorBet {
     constructor(selectionId, side, price, size, opts = {}) {
         let options = _.merge(_.cloneDeep(BET_DEFAULT_OPTIONS), opts);
-        if(options.orderType!='LIMIT') {
+        if (options.orderType != 'LIMIT') {
             throw new Error('Only orderType="LIMIT" orders are supported');
         }
         this.betId = NEXT_BET_ID++;
@@ -57,7 +57,8 @@ class EmulatorBet {
             sizeRemaining: this.sizeRemaining,
             sizeLapsed: this.sizeLapsed,
             sizeCancelled: this.sizeCancelled,
-            sizeVoided: this.sizeVoided
+            sizeVoided: this.sizeVoided,
+            isEmulatorBet: true
         };
     }
 

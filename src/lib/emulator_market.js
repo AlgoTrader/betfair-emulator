@@ -14,9 +14,12 @@ class EmulatorMarket {
         this.unmatchedBets = new Map();
     }
 
+    // match bets using new price data
     _matchBets() {
+        return;
     }
 
+    // handle market go inplay
     _onGoInplay() {
         this.log.debug('marketId: ' + this.marketId + ' go inplay');
 
@@ -30,6 +33,21 @@ class EmulatorMarket {
             }
         }
         _.each(lapsedIds, (id) => {this.unmatchedBets.delete(id);})
+    }
+
+    // update listMarketBook with emilator orders
+    _updateOrders(runner, key, orders) {
+        if (!_.isArray(runner[key])) {
+            runner[key] = [];
+        }
+
+        let selectionId = runner.selectionId;
+        for (let tuple of orders) {
+            let [betId, bet] = tuple;
+            if (selectionId == bet.selectionId) {
+                runner[key].push(bet.getOrder());
+            }
+        }
     }
 
     onListMarketBook(marketBook) {
@@ -69,6 +87,10 @@ class EmulatorMarket {
             }, 0);
             this.log.debug('lay availability', layAvailability);
 
+            // update orders/matches
+            this._updateOrders(runner, 'orders', this.unmatchedBets);
+            this._updateOrders(runner, 'matches', this.matchedBets);
+
             // store
             this.runners[runner.selectionId] = {
                 selectionId: runner.selectionId,
@@ -105,7 +127,7 @@ class EmulatorMarket {
                     persistenceType: instruction.limitOrder.persistenceType
                 }
             );
-            this.matchedBets.set(bet.betId, bet);
+            this.unmatchedBets.set(bet.betId, bet);
             bets.push(bet);
         });
 
@@ -122,7 +144,8 @@ class EmulatorMarket {
                     betId: bet.betId,
                     placedDate: bet.placedDate,
                     averagePriceMatched: bet.averagePriceMatched,
-                    sizeMatched: bet.sizeMatched
+                    sizeMatched: bet.sizeMatched,
+                    isEmulatorBet: true
                 }
             })
         };

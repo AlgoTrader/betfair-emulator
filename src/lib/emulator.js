@@ -44,7 +44,7 @@ class Emulator {
     // handle orders
     placeOrders(params) {
         let marketId = params.marketId;
-        if(!this.markets.has(marketId)) {
+        if (!this.markets.has(marketId)) {
             return new Error('Cannot place orders for marketId=', marketId);
         }
         let market = this.markets.get(marketId);
