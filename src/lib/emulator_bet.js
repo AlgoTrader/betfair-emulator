@@ -66,6 +66,11 @@ class EmulatorBet {
         this.sizeLapsed = this.sizeRemaining;
         this.sizeRemaining = 0;
     }
+
+    toString() {
+        return this.side + ':' + this.selectionId + ' ' +
+            this.limitOrder.size.toFixed(2) + '@' + this.limitOrder.price;
+    }
 }
 
 module.exports = EmulatorBet;

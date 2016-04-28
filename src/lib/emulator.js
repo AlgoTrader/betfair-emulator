@@ -29,7 +29,7 @@ class Emulator {
     }
 
     // getMarketBook feed, provides prices for emulator
-    onListMarketBook(marketBooks) {
+    onListMarketBook(params, marketBooks) {
         this.log.debug('feed feedListMarketBook', marketBooks);
         _.each(marketBooks, (marketBook) => {
             if (!this.markets.has(marketBook.marketId)) {
@@ -37,7 +37,7 @@ class Emulator {
                 return;
             }
             let marketEmulator = this.markets.get(marketBook.marketId);
-            marketEmulator.onListMarketBook(marketBook);
+            marketEmulator.onListMarketBook(params, marketBook);
         });
     }
 

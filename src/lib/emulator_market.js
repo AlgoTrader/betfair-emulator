@@ -16,7 +16,18 @@ class EmulatorMarket {
 
     // match bets using new price data
     _matchBets() {
+        this.log.debug('try match bets');
 
+        let matchedBetIds = [];
+        this.unmatchedBets.forEach((bet, betId) => {
+            console.log('_matchBets betId=', betId, bet.toString());
+            switch(bet.size) {
+                case 'LAY':
+                    break;
+                case 'BACK':
+                    break;
+            }
+        });
         return;
     }
 
@@ -37,26 +48,28 @@ class EmulatorMarket {
     }
 
     // update listMarketBook with emilator orders
-    _updateOrders(runner, key, orders) {
-        if (!_.isArray(runner[key])) {
-            runner[key] = [];
+    _updateOrders(runner, orders) {
+        this.log.debug('update orders for runnerId'+runner.selectionId);
+
+        if (!_.isArray(runner.orders)) {
+            runner.orders = [];
         }
 
         let selectionId = runner.selectionId;
         for (let tuple of orders) {
             let [betId, bet] = tuple;
             if (selectionId == bet.selectionId) {
-                runner[key].push(bet.getOrder());
+                runner.orders.push(bet.getOrder());
             }
         }
     }
 
-    onListMarketBook(marketBook) {
+    onListMarketBook(params, marketBook) {
         if (marketBook.marketId != this.marketId) {
             throw new Error('onListMarketBook marketId mismatch');
         }
 
-        this.log.debug('onListMarketBook for market: ' + this.marketId);
+        this.log.debug('onListMarketBook for market: ' + this.marketId, params);
         if (!this.inplay && marketBook.inplay) {
             _onGoInplay();
         }
@@ -65,6 +78,8 @@ class EmulatorMarket {
         this.betDelay = marketBook.betDelay;
         this.inplay = marketBook.inplay;
         this.version = marketBook.version;
+
+        // update prices
         _.each(marketBook.runners, (runner) => {
             // avaliable to BACK
             let availableToBack = _.cloneDeep(runner.ex.availableToBack);
@@ -88,10 +103,6 @@ class EmulatorMarket {
             }, 0);
             this.log.debug('lay availability', layAvailability);
 
-            // update orders/matches
-            this._updateOrders(runner, 'orders', this.unmatchedBets);
-            this._updateOrders(runner, 'matches', this.matchedBets);
-
             // store
             this.runners[runner.selectionId] = {
                 selectionId: runner.selectionId,
@@ -99,7 +110,20 @@ class EmulatorMarket {
                 layAvailability
             }
         });
-        this.log.debug('preprocessed runners', this.runners);
+
+        // try match bets
+        this._matchBets();
+
+        // put orders into response
+        _.each(marketBook.runners, (runner) => {
+            // update orders/matches
+            if(params.orderProjection=='ALL' || params.orderProjection=='EXECUTABLE') {
+                this._updateOrders(runner, this.unmatchedBets);
+            }
+            if(params.orderProjection=='ALL' || params.orderProjection=='EXECUTION_COMPLETE') {
+                this._updateOrders(runner, this.matchedBets);
+            }
+        });
 
         this.initialized = true;
     }
