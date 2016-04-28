@@ -21,12 +21,51 @@ class EmulatorMarket {
         let matchedBetIds = [];
         this.unmatchedBets.forEach((bet, betId) => {
             console.log('_matchBets betId=', betId, bet.toString());
-            switch(bet.size) {
+            let runner = this.runners[bet.selectionId];
+            switch (bet.side) {
                 case 'LAY':
+                    let toLay = runner.layAvailability;
+                    let worstLay = _.last(toLay);
+                    if (bet.price > worstLay.price) {
+                        bet.match(worstLay.price,
+                            `marketWorstLayPrice=${worstLay.price}, price=${bet.price}`);
+                        matchedBetIds.push(bet.betId);
+                    }
+                    _.forEach(toLay, (offer) => {
+                        if (bet.price >= offer.price && bet.size < offer.size) {
+                            bet.match(offer.price,
+                                `marketPrice=${offer.price}, marketSize=${offer.size} price=${bet.price}`);
+                            matchedBetIds.push(bet.betId);
+                            return false;
+                        }
+                        return true;
+                    });
                     break;
                 case 'BACK':
+                    let toBack = runner.backAvailability;
+                    let worstBack = _.last(toBack);
+                    if (bet.price < worstBack.price) {
+                        bet.match(worstBack.price,
+                            `marketWorstBackPrice=${worstBack.price}, price=${bet.price}`);
+                        matchedBetIds.push(bet.betId);
+                    }
+                    _.forEach(toBack, (offer) => {
+                        if (bet.price <= offer.price && bet.size < offer.size) {
+                            bet.match(offer.price,
+                                `marketPrice=${offer.price}, marketSize=${offer.size} price=${bet.price}`);
+                            matchedBetIds.push(bet.betId);
+                            return false;
+                        }
+                        return true;
+                    });
                     break;
             }
+        });
+        // place matched bets to this.matchedBets, remove from this.unmatchedBets
+        _.forEach(matchedBetIds, (betId) => {
+            let bet = this.unmatchedBets.get(betId);
+            this.matchedBets.set(betId, bet);
+            this.unmatchedBets.delete(betId);
         });
         return;
     }
@@ -49,7 +88,7 @@ class EmulatorMarket {
 
     // update listMarketBook with emilator orders
     _updateOrders(runner, orders) {
-        this.log.debug('update orders for runnerId'+runner.selectionId);
+        this.log.debug('update orders for runnerId' + runner.selectionId);
 
         if (!_.isArray(runner.orders)) {
             runner.orders = [];
@@ -117,10 +156,10 @@ class EmulatorMarket {
         // put orders into response
         _.each(marketBook.runners, (runner) => {
             // update orders/matches
-            if(params.orderProjection=='ALL' || params.orderProjection=='EXECUTABLE') {
+            if (params.orderProjection == 'ALL' || params.orderProjection == 'EXECUTABLE') {
                 this._updateOrders(runner, this.unmatchedBets);
             }
-            if(params.orderProjection=='ALL' || params.orderProjection=='EXECUTION_COMPLETE') {
+            if (params.orderProjection == 'ALL' || params.orderProjection == 'EXECUTION_COMPLETE') {
                 this._updateOrders(runner, this.matchedBets);
             }
         });
@@ -128,7 +167,7 @@ class EmulatorMarket {
         this.initialized = true;
     }
 
-    placeOrders(params, cb=() => {}) {
+    placeOrders(params, cb = () => {}) {
         if (params.marketId != this.marketId) {
             throw new Error('placeOrders marketId mismatch');
         }
@@ -143,6 +182,7 @@ class EmulatorMarket {
         let bets = [];
         _.each(params.instructions, (instruction) => {
             let bet = new EmulatorBet(
+                this.log,
                 instruction.selectionId,
                 instruction.side,
                 instruction.limitOrder.price,

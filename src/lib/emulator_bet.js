@@ -8,11 +8,12 @@ const BET_DEFAULT_OPTIONS = {
 };
 
 class EmulatorBet {
-    constructor(selectionId, side, price, size, opts = {}) {
+    constructor(logger, selectionId, side, price, size, opts = {}) {
         let options = _.merge(_.cloneDeep(BET_DEFAULT_OPTIONS), opts);
         if (options.orderType != 'LIMIT') {
             throw new Error('Only orderType="LIMIT" orders are supported');
         }
+        this.log = logger;
         this.betId = NEXT_BET_ID++;
         this.orderType = options.orderType;
         this.selectionId = selectionId;
@@ -32,6 +33,20 @@ class EmulatorBet {
         this.sizeVoided = 0;
     }
 
+    // shorthand price getter
+    get price() {
+        return this.limitOrder.price;
+    }
+
+    // shorthand size getter
+    get size() {
+        return this.limitOrder.size
+    }
+
+    get status() {
+        return (this.sizeRemaining > 0) ? 'EXECUTABLE' : 'EXECUTION_COMPLETE';
+    }
+
     getInstruction() {
         return {
             selectionId: this.selectionId,
@@ -45,7 +60,7 @@ class EmulatorBet {
         return {
             betId: this.betId,
             orderType: this.orderType,
-            status: 'EXECUTABLE',
+            status: this.status,
             persistenceType: this.limitOrder.persistenceType,
             side: this.side,
             price: this.limitOrder.price,
@@ -58,13 +73,23 @@ class EmulatorBet {
             sizeLapsed: this.sizeLapsed,
             sizeCancelled: this.sizeCancelled,
             sizeVoided: this.sizeVoided,
-            isEmulatorBet: true
+            isEmulatorBet: true,
+            emulatorMatchReason: this.reason
         };
     }
 
     lapse() {
+        this.log.debug('EmulatorBet: lapse:'+this.toString());
         this.sizeLapsed = this.sizeRemaining;
         this.sizeRemaining = 0;
+    }
+
+    match(price, reason) {
+        this.log.debug('EmulatorBet: match:'+this.toString()+'averagePriceMatched:'+price+' reason:'+reason);
+        this.averagePriceMatched = price;
+        this.sizeMatched = this.sizeRemaining;
+        this.sizeRemaining = 0;
+        this.reason = reason;
     }
 
     toString() {
