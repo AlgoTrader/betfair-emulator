@@ -110,7 +110,7 @@ class EmulatorMarket {
 
         this.log.debug('onListMarketBook for market: ' + this.marketId, params);
         if (!this.inplay && marketBook.inplay) {
-            _onGoInplay();
+            this._onGoInplay();
         }
 
         this.status = marketBook.status;
