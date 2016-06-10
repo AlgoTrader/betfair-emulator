@@ -51,12 +51,30 @@ class Emulator {
         let market = this.markets.get(marketId);
         if(!market.initialized) {
             console.log('throw error');
-            throw new Error('Cannot bet on uninitialized market, marketId='+marketId);
+            throw new Error('Cannot placeOrders on uninitialized market, marketId='+marketId);
         }
         let delay = market.betDelay*1000 + NETWORK_DELAY +BETTING_DELAY;
         _.delay(() => {
             this.log.debug('placeOrders delayed execution, delay='+delay, params);
             market.placeOrders(params, cb);
+        }, delay);
+    }
+
+    cancelOrders(params, cb = () => {}) {
+        this.log.debug('cancelOrders scheduled', params);
+        let marketId = params.marketId;
+        if (!this.markets.has(marketId)) {
+            throw new Error('Market does not use emulator, marketId='+ marketId);
+        }
+        let market = this.markets.get(marketId);
+        if(!market.initialized) {
+            console.log('throw error');
+            throw new Error('Cannot cancelOrders on uninitialized market, marketId='+marketId);
+        }
+        let delay = NETWORK_DELAY +BETTING_DELAY;
+        _.delay(() => {
+            this.log.debug('placeOrders delayed execution, delay='+delay, params);
+            market.cancelOrders(params, cb);
         }, delay);
     }
 }

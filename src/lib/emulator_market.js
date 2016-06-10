@@ -217,6 +217,10 @@ class EmulatorMarket {
         this.log.debug('placeOrders result:', result);
         cb(null, result);
     }
+    
+    cancelOrders(params, cb = () => {}) {
+        cb(null, {funka:true});
+    }
 }
 
 module.exports = EmulatorMarket;
