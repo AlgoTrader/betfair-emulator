@@ -67,10 +67,10 @@ class Emulator {
             throw new Error('Market does not use emulator, marketId='+ marketId);
         }
         let market = this.markets.get(marketId);
-        if(!market.initialized) {
-            console.log('throw error');
-            throw new Error('Cannot cancelOrders on uninitialized market, marketId='+marketId);
-        }
+        // if(!market.initialized) {
+        //     console.log('throw error');
+        //     throw new Error('Cannot cancelOrders on uninitialized market, marketId='+marketId);
+        // }
         let delay = NETWORK_DELAY +BETTING_DELAY;
         _.delay(() => {
             this.log.debug('cancelOrders delayed execution, delay='+delay, params);
