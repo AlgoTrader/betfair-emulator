@@ -21,7 +21,7 @@ class Emulator {
 
     disableEmulationForMarket(marketId) {
         this.log.info('stopped emulation for market: ' + marketId);
-        this.market.delete(marketId);
+        this.markets.delete(marketId);
     }
 
     isEmulatedMarket(marketId) {
