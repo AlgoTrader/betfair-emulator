@@ -25,7 +25,12 @@ class EmulatorMarket {
             switch (bet.side) {
                 case 'LAY':
                     let toLay = runner.layAvailability;
+                    if(toLay.length==0) {
+                        // no offers
+                        return;
+                    }
                     let worstLay = _.last(toLay);
+                    console.log(worstLay, toLay);
                     if (bet.price > worstLay.price) {
                         bet.match(worstLay.price,
                             `marketWorstLayPrice=${worstLay.price}, price=${bet.price}`);
@@ -43,6 +48,10 @@ class EmulatorMarket {
                     break;
                 case 'BACK':
                     let toBack = runner.backAvailability;
+                    if(toBack.length==0) {
+                        // no offers
+                        return;
+                    }
                     let worstBack = _.last(toBack);
                     if (bet.price < worstBack.price) {
                         bet.match(worstBack.price,
@@ -217,9 +226,46 @@ class EmulatorMarket {
         this.log.debug('placeOrders result:', result);
         cb(null, result);
     }
-    
+
     cancelOrders(params, cb = () => {}) {
-        cb(null, {funka:true});
+        if (params.marketId != this.marketId) {
+            throw new Error('cancelOrders marketId mismatch');
+        }
+        let instructions = _.cloneDeep(params.instructions);
+        if(!instructions) {
+            instructions = this.unmatchedBets.keys().map((id)=>{betId:id});
+        }
+        let hasErrors = false;
+        let result = [];
+        _.each(instructions, (instruction) => {
+            let bet = this.unmatchedBets.get(instruction.betId);
+            if(!bet) {
+                result.push({
+                    status: "FAILURE",
+                    errorCode: "BET_TAKEN_OR_LAPSED",
+                    instruction
+                });
+                hasErrors = true;
+                return;
+            }
+            let sizeCancelled = bet.cancel(instruction.sizeReduction);
+            result.push({
+                status: "SUCCESS",
+                instruction,
+                sizeCancelled,
+                cancelledDate: new Date()
+            });
+            if(bet.sizeRemaining==0) {
+                this.unmatchedBets.delete(bet.betId);
+            }
+        });
+        cb(null, {
+            customerRef: params.customerRef,
+            status: hasErrors ? "PROCESSED_WITH_ERRORS" : "SUCCESS",
+            errorCode: hasErrors ? "PROCESSED_WITH_ERRORS" : undefined,
+            marketId: params.marketId,
+            instructionReports: result
+        });
     }
 }
 

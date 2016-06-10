@@ -92,6 +92,19 @@ class EmulatorBet {
         this.reason = reason;
     }
 
+    cancel(sizeReduction) {
+        sizeReduction = parseFloat(sizeReduction);
+        this.log.debug(`EmulatorBet: sizeReduction:${sizeReduction} bet:`+this.toString());
+        let sizeCancelled = this.sizeRemaining;
+        if(sizeReduction>0) {
+            sizeCancelled = _.min([sizeReduction, this.sizeRemaining]);
+        }
+        this.sizeRemaining -= sizeCancelled;
+        this.sizeCancelled += sizeCancelled;
+        //console.log(`sizeCancelled=${sizeCancelled}`);
+        return sizeCancelled;
+    }
+
     toString() {
         return this.side + ':' + this.selectionId + ' ' +
             this.limitOrder.size.toFixed(2) + '@' + this.limitOrder.price;

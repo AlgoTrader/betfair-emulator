@@ -73,7 +73,7 @@ class Emulator {
         }
         let delay = NETWORK_DELAY +BETTING_DELAY;
         _.delay(() => {
-            this.log.debug('placeOrders delayed execution, delay='+delay, params);
+            this.log.debug('cancelOrders delayed execution, delay='+delay, params);
             market.cancelOrders(params, cb);
         }, delay);
     }
