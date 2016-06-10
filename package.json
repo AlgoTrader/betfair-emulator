@@ -1,6 +1,6 @@
 {
   "name": "betfair-emulator",
-  "version": "1.6.9",
+  "version": "1.6.11",
   "description": "Betfair emulator",
   "main": "index.js",
   "scripts": {

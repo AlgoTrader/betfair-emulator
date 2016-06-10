@@ -233,7 +233,18 @@ class EmulatorMarket {
         }
         let instructions = _.cloneDeep(params.instructions);
         if(!instructions) {
-            instructions = this.unmatchedBets.keys().map((id)=>{betId:id});
+            let ids = Array.from(this.unmatchedBets.keys());
+            instructions = ids.map((id)=>{return {betId:id}});
+        }
+        if(instructions.length==0) {
+            // no bets to cancel
+            cb(null, {
+                customerRef: params.customerRef,
+                status: 'SUCCESS',
+                marketId: params.marketId,
+                instructionReports: []
+            });
+            return;
         }
         let allErrors = true;
         let hasErrors = false;
