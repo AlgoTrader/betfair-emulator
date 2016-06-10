@@ -235,6 +235,7 @@ class EmulatorMarket {
         if(!instructions) {
             instructions = this.unmatchedBets.keys().map((id)=>{betId:id});
         }
+        let allErrors = true;
         let hasErrors = false;
         let result = [];
         _.each(instructions, (instruction) => {
@@ -255,14 +256,17 @@ class EmulatorMarket {
                 sizeCancelled,
                 cancelledDate: new Date()
             });
+            allErrors = false;
             if(bet.sizeRemaining==0) {
                 this.unmatchedBets.delete(bet.betId);
             }
         });
+        let status = allErrors ? 'FAILURE' : (hasErrors ? "PROCESSED_WITH_ERRORS" : "SUCCESS");
+        let errorCode = allErrors ? 'BET_ACTION_ERROR' : (hasErrors ? "PROCESSED_WITH_ERRORS" : undefined);
         cb(null, {
             customerRef: params.customerRef,
-            status: hasErrors ? "PROCESSED_WITH_ERRORS" : "SUCCESS",
-            errorCode: hasErrors ? "PROCESSED_WITH_ERRORS" : undefined,
+            status,
+            errorCode,
             marketId: params.marketId,
             instructionReports: result
         });
