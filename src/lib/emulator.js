@@ -42,38 +42,48 @@ class Emulator {
     }
 
     // handle orders
-    placeOrders(params, cb = () => {}) {
+    placeOrders(params, cb = () => {
+    }) {
         this.log.debug('placeOrders scheduled', params);
         let marketId = params.marketId;
         if (!this.markets.has(marketId)) {
-            throw new Error('Market does not use emulator, marketId='+ marketId);
+            throw new Error('Market does not use emulator, marketId=' + marketId);
         }
         let market = this.markets.get(marketId);
-        if(!market.initialized) {
+        if (!market.initialized) {
             console.log('throw error');
-            throw new Error('Cannot placeOrders on uninitialized market, marketId='+marketId);
+            throw new Error('Cannot placeOrders on uninitialized market, marketId=' + marketId);
         }
-        let delay = market.betDelay*1000 + NETWORK_DELAY +BETTING_DELAY;
+        let delay = market.betDelay * 1000 + NETWORK_DELAY + BETTING_DELAY;
         _.delay(() => {
-            this.log.debug('placeOrders delayed execution, delay='+delay, params);
+            this.log.debug('placeOrders delayed execution, delay=' + delay, params);
             market.placeOrders(params, cb);
         }, delay);
     }
 
-    cancelOrders(params, cb = () => {}) {
+    cancelOrders(params, cb = () => {
+    }) {
         this.log.debug('cancelOrders scheduled', params);
         let marketId = params.marketId;
         if (!this.markets.has(marketId)) {
-            throw new Error('Market does not use emulator, marketId='+ marketId);
+            throw new Error('Market does not use emulator, marketId=' + marketId);
         }
         let market = this.markets.get(marketId);
-        if(!market.initialized) {
-            console.log('throw error');
-            throw new Error('Cannot cancelOrders on uninitialized market, marketId='+marketId);
+        if (!market) {
+            // no bets to cancel
+            _.delay(() => {
+                cb(null, {
+                    customerRef: params.customerRef,
+                    status: 'SUCCESS',
+                    marketId: params.marketId,
+                    instructionReports: []
+                });
+            }, delay);
+            return;
         }
-        let delay = NETWORK_DELAY +BETTING_DELAY;
+        let delay = NETWORK_DELAY + BETTING_DELAY;
         _.delay(() => {
-            this.log.debug('cancelOrders delayed execution, delay='+delay, params);
+            this.log.debug('cancelOrders delayed execution, delay=' + delay, params);
             market.cancelOrders(params, cb);
         }, delay);
     }
