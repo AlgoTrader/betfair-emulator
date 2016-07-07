@@ -20,7 +20,7 @@ class EmulatorMarket {
 
         let matchedBetIds = [];
         this.unmatchedBets.forEach((bet, betId) => {
-            console.log('_matchBets betId=', betId, bet.toString());
+            this.log.info('_matchBets betId=', betId, bet.toString());
             let runner = this.runners[bet.selectionId];
             switch (bet.side) {
                 case 'LAY':
@@ -95,7 +95,7 @@ class EmulatorMarket {
         _.each(lapsedIds, (id) => {this.unmatchedBets.delete(id);})
     }
 
-    // update listMarketBook with emilator orders
+    // update listMarketBook with emulator orders
     _updateOrders(runner, orders) {
         this.log.debug('update orders for runnerId' + runner.selectionId);
 
@@ -166,9 +166,11 @@ class EmulatorMarket {
         _.each(marketBook.runners, (runner) => {
             // update orders/matches
             if (params.orderProjection == 'ALL' || params.orderProjection == 'EXECUTABLE') {
+                this.log.debug('update unmatched orders');
                 this._updateOrders(runner, this.unmatchedBets);
             }
             if (params.orderProjection == 'ALL' || params.orderProjection == 'EXECUTION_COMPLETE') {
+                this.log.debug('update matched orders');
                 this._updateOrders(runner, this.matchedBets);
             }
         });
